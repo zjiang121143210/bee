@@ -1,0 +1,20 @@
+{
+  "presets": [
+    [
+      "@babel/preset-env",
+      {
+        // "targets": {
+        //   "browsers": [
+        //     "Explorer >= 9",
+        //     "Edge >= 12",
+        //     "Chrome >= 49",
+        //     "Firefox >= 55",
+        //     "Safari >= 7",
+        //     "Android >= 4.4",
+        //     "iOS >=8"
+        //   ]
+        // }
+      }
+    ]
+  ]
+}
