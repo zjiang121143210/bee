@@ -13,9 +13,8 @@ const winNavigator = win.navigator;
  */
 function getBrowserData() {
   const browserData = {};
-  browserData.bw = win.innerHeight || '-';
-  browserData.bh = win.innerWidth || '-';
-  browserData.sr = winScreen ? `${winScreen.width}x${winScreen.height}` : '-';
+  browserData.bi = `${win.innerWidth || '-'}x${win.innerHeight || '-'}`;
+  browserData.sr = winScreen ? `${winScreen.width || '-'}x${winScreen.height || '-'}` : '-x-';
   browserData.bl = winNavigator && winNavigator.language ? winNavigator.language : '-';
   browserData.so = _.getPlatform();
   const ua = _.analysisUA();
@@ -29,19 +28,19 @@ function getBrowserData() {
  */
 function getElementInfo(item) {
   let info = {
-    idx: -1,
-    xpa: '',
-    cha: '',
-    hr: '',
-    td: '',
+    br: '',
+    ev: '',
+    ex: '',
+    ei: 0,
+    eh: '',
   };
   if (item instanceof HTMLElement) {
     // 为节点时
     info = _.getElementInfo(item);
-    info.td = _.getAttribute(item, config.impTag, false);
+    info.br = _.getAttribute(item, config.impTag, false);
   } else if (_.isString(item)) {
     // 字符串
-    info.td = item;
+    info.br = item;
   } else if (item instanceof Object) {
     info = _.updateFormJson(info, item);
   }
@@ -67,10 +66,9 @@ const BeeData = function () {
    * 初始化浏览器信息
    */
   this.browser = getBrowserData();
-  this.os = _.getPlatform();
   this.url = doc.URL;
   this.domain = doc.domain;
-  this.re = doc.referrer;
+  this.rf = doc.referrer;
   this.ua = navigator && navigator.userAgent ? navigator.userAgent : '-';
 };
 
@@ -82,33 +80,51 @@ BeeData.prototype._makeCommonData = function (type) {
     this.setSessionData();
   }
   const data = {
-    b: _.getCookie('uid'),
+    /**
+     * 主键
+     */
+    u: _.getCookie('uid'),
     s: _.getCookie('sid'),
+    c: this.getCid(),
     p: config.pid,
-    // 获取用户添加的业务id
-    u: this.getCid(),
-    sdk: config.v,
-    ua: this.ua,
-    d: this.domain,
+
+    /**
+     * bee相关
+     */
     t: type,
-    vis: _.getCookie('sq'),
-    tm: new Date().getTime(),
-    url: this.url,
-    re: this.re,
-    v: '',
-    os: this.os,
+    sdk: config.v,
+
+    /**
+     * 时间
+     */
+    tm: type === config.event.page ? this.ptm : `${new Date().getTime()}`,
     fs: _.getCookie('fs'),
     ls: _.getCookie('ls'),
     ts: _.getCookie('ts'),
+    vs: _.getCookie('sq'),
+    /**
+     * 浏览器相关
+     */
+    bt: this.browser.bt,
+    bv: this.browser.bv,
+    so: this.browser.so,
+    sr: this.browser.sr,
+    bi: this.browser.bi,
+    bl: this.browser.bl,
+
+    /**
+     * 地址相关
+     */
+    d: this.domain,
+    url: this.url,
+    rf: this.rf,
+
   };
   // 页面事件和访问事件没有ptm
   if (type !== config.event.visit && type !== config.event.page) {
     data.ptm = this.ptm;
   }
-  // 浏览器信息
-  const content = this.browser;
-  const json = _.joinJson(data, content);
-  return json;
+  return data;
 };
 
 /**
@@ -118,7 +134,7 @@ BeeData.prototype.makePageData = function () {
   let data = {};
   data = this._makeCommonData(config.event.page);
   const content = {
-    tl: doc.title,
+    tl: doc.title || '',
   };
   const json = _.joinJson(data, content);
   return json;
@@ -129,19 +145,19 @@ BeeData.prototype.makePageData = function () {
  */
 BeeData.prototype.makeClickData = function (elInfo, targetData) {
   const {
-    idx,
-    xpa,
-    cha,
-    hr,
+    ev,
+    ex,
+    ei,
+    eh,
   } = elInfo;
   let data = {};
   data = this._makeCommonData(config.event.click);
   const content = {
-    cha,
-    xpa,
-    td: targetData,
-    idx,
-    hr,
+    br: targetData,
+    ev,
+    ex,
+    ei,
+    eh,
   };
 
   const json = _.joinJson(data, content);
@@ -168,22 +184,27 @@ BeeData.prototype.makeImpData = function (impList) {
 BeeData.prototype.makeCustomData = function (type, param) {
   const paramString = _.isString(param) ? param : JSON.stringify(param);
   const data = this._makeCommonData(config.event.cstm);
-  data.cus = paramString;
-  data.cut = type;
+  data.et = type;
+  data.ep = paramString;
   return data;
 };
 
+/**
+ * 更新页面相关数据
+ * @param newURL 新的地址
+ * @param oldURL 旧的地址
+ */
 BeeData.prototype.updateRoute = function (newURL = doc.URL, oldURL = doc.referrer) {
   this.setPtm();
   this.url = newURL;
-  this.re = oldURL;
+  this.rf = oldURL;
 };
 
 /**
  * 设置页面打开时间
  */
 BeeData.prototype.setPtm = function () {
-  this.ptm = new Date().getTime();
+  this.ptm = `${new Date().getTime()}`;
 };
 
 /**
@@ -241,7 +262,7 @@ BeeData.prototype.setSt = function () {
 BeeData.prototype.setSq = function () {
   let sq = _.getCookie('sq');
   if (_.isNotVoid(sq)) {
-    sq += 1;
+    sq = parseInt(sq, 10) + 1;
   } else {
     sq = 1;
   }

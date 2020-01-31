@@ -23,10 +23,6 @@
     return Constructor;
   }
 
-  function _slicedToArray(arr, i) {
-    return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest();
-  }
-
   function _toConsumableArray(arr) {
     return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread();
   }
@@ -39,50 +35,12 @@
     }
   }
 
-  function _arrayWithHoles(arr) {
-    if (Array.isArray(arr)) return arr;
-  }
-
   function _iterableToArray(iter) {
     if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter);
   }
 
-  function _iterableToArrayLimit(arr, i) {
-    if (!(Symbol.iterator in Object(arr) || Object.prototype.toString.call(arr) === "[object Arguments]")) {
-      return;
-    }
-
-    var _arr = [];
-    var _n = true;
-    var _d = false;
-    var _e = undefined;
-
-    try {
-      for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
-        _arr.push(_s.value);
-
-        if (i && _arr.length === i) break;
-      }
-    } catch (err) {
-      _d = true;
-      _e = err;
-    } finally {
-      try {
-        if (!_n && _i["return"] != null) _i["return"]();
-      } finally {
-        if (_d) throw _e;
-      }
-    }
-
-    return _arr;
-  }
-
   function _nonIterableSpread() {
     throw new TypeError("Invalid attempt to spread non-iterable instance");
-  }
-
-  function _nonIterableRest() {
-    throw new TypeError("Invalid attempt to destructure non-iterable instance");
   }
 
   /**
@@ -409,26 +367,26 @@
   };
   /**
    * 获取元素的信息
-   * idx 元素index
-   * xpa xpath
-   * cha value
-   * hr href
+   * ev value
+   * ex xpath
+   * ei 元素index
+   * eh href
    */
 
 
   _.getElementInfo = function (el) {
-    var hr = el.tagName.toLowerCase() === 'a' && el.getAttribute('href') ? el.getAttribute('href') : '';
+    var eh = el.getAttribute('href') || el.getAttribute('src') || '';
+    var ev = el.innerText || '';
 
-    var idx = _.getElementIndex(el);
+    var ei = _.getElementIndex(el);
 
-    var xpa = _.getElementPath(el);
+    var ex = _.getElementPath(el);
 
-    var cha = el.innerText;
     return {
-      idx: idx,
-      xpa: xpa,
-      cha: cha,
-      hr: hr
+      ev: ev,
+      ex: ex,
+      ei: ei,
+      eh: eh
     };
   };
   /**
@@ -453,7 +411,7 @@
 
     return ix;
   };
-  /**
+  /*
    * 获取元素的xpath
    */
 
@@ -590,11 +548,11 @@
       var android = /(android)/.exec(userAgent.toLowerCase());
       os = _.isNull(android) ? platform[0] : 'android';
     } else {
-      var _platform = _slicedToArray(platform, 1);
-
-      os = _platform[0];
+      os = platform[0];
     }
 
+    console.log(platform);
+    console.log(os);
     return os;
   };
   /**
@@ -664,9 +622,8 @@
 
   function getBrowserData() {
     var browserData = {};
-    browserData.bw = win$1.innerHeight || '-';
-    browserData.bh = win$1.innerWidth || '-';
-    browserData.sr = winScreen ? "".concat(winScreen.width, "x").concat(winScreen.height) : '-';
+    browserData.bi = "".concat(win$1.innerWidth || '-', "x").concat(win$1.innerHeight || '-');
+    browserData.sr = winScreen ? "".concat(winScreen.width || '-', "x").concat(winScreen.height || '-') : '-x-';
     browserData.bl = winNavigator && winNavigator.language ? winNavigator.language : '-';
     browserData.so = _.getPlatform();
 
@@ -683,20 +640,20 @@
 
   function getElementInfo(item) {
     var info = {
-      idx: -1,
-      xpa: '',
-      cha: '',
-      hr: '',
-      td: ''
+      br: '',
+      ev: '',
+      ex: '',
+      ei: 0,
+      eh: ''
     };
 
     if (item instanceof HTMLElement) {
       // 为节点时
       info = _.getElementInfo(item);
-      info.td = _.getAttribute(item, config.impTag, false);
+      info.br = _.getAttribute(item, config.impTag, false);
     } else if (_.isString(item)) {
       // 字符串
-      info.td = item;
+      info.br = item;
     } else if (item instanceof Object) {
       info = _.updateFormJson(info, item);
     }
@@ -727,10 +684,9 @@
 
 
     this.browser = getBrowserData();
-    this.os = _.getPlatform();
     this.url = doc$1.URL;
     this.domain = doc$1.domain;
-    this.re = doc$1.referrer;
+    this.rf = doc$1.referrer;
     this.ua = navigator && navigator.userAgent ? navigator.userAgent : '-';
   };
   /**
@@ -744,36 +700,52 @@
     }
 
     var data = {
-      b: _.getCookie('uid'),
+      /**
+       * 主键
+       */
+      u: _.getCookie('uid'),
       s: _.getCookie('sid'),
+      c: this.getCid(),
       p: config.pid,
-      // 获取用户添加的业务id
-      u: this.getCid(),
-      sdk: config.v,
-      ua: this.ua,
-      d: this.domain,
+
+      /**
+       * bee相关
+       */
       t: type,
-      vis: _.getCookie('sq'),
-      tm: new Date().getTime(),
-      url: this.url,
-      re: this.re,
-      v: '',
-      os: this.os,
+      sdk: config.v,
+
+      /**
+       * 时间
+       */
+      tm: type === config.event.page ? this.ptm : "".concat(new Date().getTime()),
       fs: _.getCookie('fs'),
       ls: _.getCookie('ls'),
-      ts: _.getCookie('ts')
+      ts: _.getCookie('ts'),
+      vs: _.getCookie('sq'),
+
+      /**
+       * 浏览器相关
+       */
+      bt: this.browser.bt,
+      bv: this.browser.bv,
+      so: this.browser.so,
+      sr: this.browser.sr,
+      bi: this.browser.bi,
+      bl: this.browser.bl,
+
+      /**
+       * 地址相关
+       */
+      d: this.domain,
+      url: this.url,
+      rf: this.rf
     }; // 页面事件和访问事件没有ptm
 
     if (type !== config.event.visit && type !== config.event.page) {
       data.ptm = this.ptm;
-    } // 浏览器信息
+    }
 
-
-    var content = this.browser;
-
-    var json = _.joinJson(data, content);
-
-    return json;
+    return data;
   };
   /**
    * 组装页面上报数据
@@ -784,7 +756,7 @@
     var data = {};
     data = this._makeCommonData(config.event.page);
     var content = {
-      tl: doc$1.title
+      tl: doc$1.title || ''
     };
 
     var json = _.joinJson(data, content);
@@ -797,18 +769,18 @@
 
 
   BeeData.prototype.makeClickData = function (elInfo, targetData) {
-    var idx = elInfo.idx,
-        xpa = elInfo.xpa,
-        cha = elInfo.cha,
-        hr = elInfo.hr;
+    var ev = elInfo.ev,
+        ex = elInfo.ex,
+        ei = elInfo.ei,
+        eh = elInfo.eh;
     var data = {};
     data = this._makeCommonData(config.event.click);
     var content = {
-      cha: cha,
-      xpa: xpa,
-      td: targetData,
-      idx: idx,
-      hr: hr
+      br: targetData,
+      ev: ev,
+      ex: ex,
+      ei: ei,
+      eh: eh
     };
 
     var json = _.joinJson(data, content);
@@ -842,17 +814,23 @@
 
     var data = this._makeCommonData(config.event.cstm);
 
-    data.cus = paramString;
-    data.cut = type;
+    data.et = type;
+    data.ep = paramString;
     return data;
   };
+  /**
+   * 更新页面相关数据
+   * @param newURL 新的地址
+   * @param oldURL 旧的地址
+   */
+
 
   BeeData.prototype.updateRoute = function () {
     var newURL = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : doc$1.URL;
     var oldURL = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : doc$1.referrer;
     this.setPtm();
     this.url = newURL;
-    this.re = oldURL;
+    this.rf = oldURL;
   };
   /**
    * 设置页面打开时间
@@ -860,7 +838,7 @@
 
 
   BeeData.prototype.setPtm = function () {
-    this.ptm = new Date().getTime();
+    this.ptm = "".concat(new Date().getTime());
   };
   /**
    * 设置用户数据
@@ -928,7 +906,7 @@
     var sq = _.getCookie('sq');
 
     if (_.isNotVoid(sq)) {
-      sq += 1;
+      sq = parseInt(sq, 10) + 1;
     } else {
       sq = 1;
     }

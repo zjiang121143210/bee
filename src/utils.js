@@ -172,22 +172,22 @@ _.getAttribute = function (element, attribute, deep = false) {
 
 /**
  * 获取元素的信息
- * idx 元素index
- * xpa xpath
- * cha value
- * hr href
+ * ev value
+ * ex xpath
+ * ei 元素index
+ * eh href
  */
 _.getElementInfo = function (el) {
-  const hr = el.tagName.toLowerCase() === 'a' && el.getAttribute('href') ? el.getAttribute('href') : '';
-  const idx = _.getElementIndex(el);
-  const xpa = _.getElementPath(el);
-  const cha = el.innerText;
+  const eh = el.getAttribute('href') || el.getAttribute('src') || '';
+  const ev = el.innerText || '';
+  const ei = _.getElementIndex(el);
+  const ex = _.getElementPath(el);
 
   return {
-    idx,
-    xpa,
-    cha,
-    hr,
+    ev,
+    ex,
+    ei,
+    eh,
   };
 };
 
@@ -209,7 +209,7 @@ _.getElementIndex = function (el) {
   return ix;
 };
 
-/**
+/*
  * 获取元素的xpath
  */
 _.getElementPath = function (el) {
@@ -322,8 +322,10 @@ _.getPlatform = function () {
     const android = /(android)/.exec(userAgent.toLowerCase());
     os = _.isNull(android) ? platform[0] : 'android';
   } else {
-    [os] = platform;
+    os = platform[0];
   }
+  console.log(platform);
+  console.log(os);
   return os;
 };
 
