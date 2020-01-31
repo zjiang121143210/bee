@@ -1,35 +1,38 @@
 import Bee from './bee-core';
 import {
   console,
+  _,
 } from './utils';
 
 function init() {
   if (window.bee.done) return;
 
-  let isInit = false;
   let _bee = null;
   const q = window.bee && window.bee.q ? window.bee.q.slice() : [];
+
   /**
    * 命令函数
    */
   window.bee = function (active, data, option) {
-    if (!isInit) {
-      if (active !== 'init') {
-        console.error('【bee】：请初始化！');
-      } else {
-        _bee = new Bee(data, option);
-        isInit = true;
+    let res = false;
+    if (_bee instanceof Bee) {
+      try {
+        res = _bee.command(active, data, option);
+      } catch (e) {
+        console.error('调用异常！');
       }
-      return;
+    } else if (active === 'init') {
+      _bee = new Bee(data, option);
+      res = true;
+    } else {
+      console.error('请初始化！');
     }
-    try {
-      _bee[active](data, option);
-    } catch (error) {
-      console.error('【bee】：调用异常！');
-    }
+    return res;
   };
-
+  // bee引入完成
   window.bee.done = true;
+  window.bee.toString = () => 'Bee: bee() { [native code] }';
+
   /**
    * 处理队列
    */

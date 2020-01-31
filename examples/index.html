@@ -11,13 +11,31 @@
       }, n = t.createElement('script'), tag = t.getElementsByTagName('script')[0], n.async = 1, n.src = (document
         .location.protocol == 'https:' ? 'https://' : 'http://') + g, tag.parentNode.insertBefore(n, tag);
     }(window, document, 'script', 't.jd.com/bee.js', 'bee'));
-    bee('init', '0a1b4118dd954ec3bcc69da5138bdb96', {});
+    bee('init', 'bee-test', {
+      cid: 'id',
+      req: 'jdqd.jd.com/poststring',
+      debug: true,
+      autoPage: true,
+    });
   </script>
   <title>Document</title>
 </head>
 
 <body>
   测试文件1
+  <button id="2" data-bee="button-2" data-bee-a="asd" data-bee-b="asssd">123</button>
+  <button id="3" data-bee="button-3">123</button>
+  <button id="24" data-bee="button-24">123</button>
+  <button id="23" data-bee="button-23">123</button>
+  <button id="e2" data-bee="button-e2">123</button>
+  <div>
+    <button id="e222">123</button>
+  </div>
+  <div>
+    <a href="sdaasd">addasasdasd</a>
+    <a href="sdaasd">addasasdadassdasd</a>
+    <img src="dadasd" alt="ddd">
+  </div>
 </body>
 
 </html>

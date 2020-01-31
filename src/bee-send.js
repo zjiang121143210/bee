@@ -19,11 +19,11 @@ export default function initSend(Bee) {
       // eslint-disable-next-line no-undef
       xhr = new ActiveXObject('Microsoft.XMLHTTP');
     }
-    // const xhr = new XMLHttpRequest();
     // 跨域允许发送 cookie
     // xhr.withCredentials = true;
     xhr.open('POST', protocol + config.req, async);
-    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded;charset=utf-8');
+    // xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded;charset=utf-8');
+    xhr.setRequestHeader('Content-Type', 'text/plain');
     const data = _.checkRCFL(d);
     console.log('埋点上报数据：', '类型', data.t, '数据', data);
     xhr.send(JSON.stringify(data));

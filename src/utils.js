@@ -5,8 +5,12 @@ const nativeIsArray = Array.isArray;
 const {
   toString,
 } = Object.prototype;
-const windowConsole = window.console;
-const windowNavigator = window.navigator;
+const win = window;
+const doc = window.document;
+const loc = win.location;
+const windowConsole = win.console;
+const windowNavigator = win.navigator;
+const userAgent = windowNavigator.userAgent;
 
 const _ = {};
 
@@ -23,7 +27,7 @@ _.isNull = function (v) {
 };
 
 _.isNotVoid = function (v) {
-  return !_.isVoid();
+  return !_.isVoid(v);
 };
 
 _.isDef = function (v) {
@@ -34,6 +38,10 @@ _.isString = function (obj) {
   return toString.call(obj) === '[object String]';
 };
 
+_.isObject = function (v) {
+  return toString.call(v) === '[object Object]';
+};
+
 _.isFunction = function (v) {
   return toString.call(v) === '[object Function]';
 };
@@ -42,12 +50,32 @@ _.isArray = nativeIsArray || function (obj) {
   return toString.call(obj) === '[object Array]';
 };
 
+const hasOwnProperty = Object.prototype.hasOwnProperty;
+_.hasOwn = function (obj, key) {
+  return hasOwnProperty.call(obj, key);
+};
+
 /**
  * 连接json
  */
 _.joinJson = function (target, ...arg) {
   if (_.isUndefined(target)) return {};
   return Object.assign(target, ...arg);
+};
+
+/**
+ * 更新目标json（target）
+ */
+_.updateFormJson = function (target, ...arg) {
+  arg.forEach((json) => {
+    if (!_.isObject(json)) return;
+    Reflect.ownKeys(json).forEach((key) => {
+      if (_.hasOwn(target, key)) {
+        target[key] = json[key];
+      }
+    });
+  });
+  return target;
 };
 
 _.checkRCFL = function (json) {
@@ -112,10 +140,165 @@ _.updateCookieDate = function (name, MillsTime, hasPrefix = true) {
   _.setCookie(name, _.getCookie(name, hasPrefix), MillsTime, hasPrefix);
 };
 
+/**
+ * 添加监听事件
+ */
+_.addListener = function (type, func, t) {
+  if (document.all) {
+    window.attachEvent(`on${type}`, func);
+  } else {
+    window.addEventListener(type, func, t);
+  }
+};
+
+/**
+ * 获取元素属性值
+ * @param element 元素
+ * @param attribute 属性名
+ * @param deep 是否深度遍历获取
+ * 因为某些情况下（使用ui库）无法在直接目标元素上添加 属性（可能添加在目标元素外层）的情况
+ */
+_.getAttribute = function (element, attribute, deep = false) {
+  let attr = element.getAttribute(attribute) ? element.getAttribute(attribute) : '';
+  while (!attr && deep) {
+    element = element.parentNode;
+    if (!element || element.nodeName === 'BODY' || element.nodeName === 'HTML' || element.nodeName === '#document') {
+      break;
+    }
+    attr = element.getAttribute(attribute) ? element.getAttribute(attribute) : '';
+  }
+  return attr;
+};
+
+/**
+ * 获取元素的信息
+ * idx 元素index
+ * xpa xpath
+ * cha value
+ * hr href
+ */
+_.getElementInfo = function (el) {
+  const hr = el.tagName.toLowerCase() === 'a' && el.getAttribute('href') ? el.getAttribute('href') : '';
+  const idx = _.getElementIndex(el);
+  const xpa = _.getElementPath(el);
+  const cha = el.innerText;
+
+  return {
+    idx,
+    xpa,
+    cha,
+    hr,
+  };
+};
+
+/**
+ * 获取元素的index
+ */
+_.getElementIndex = function (el) {
+  let ix = 1;
+  const child = el.parentNode.childNodes;
+  if (!child || child.length === 0) {
+    return ix;
+  }
+  for (let i = 0, l = child.length; i < l; i += 1) {
+    if (child[i] === el) {
+      ix = i + 1;
+      break;
+    }
+  }
+  return ix;
+};
+
+/**
+ * 获取元素的xpath
+ */
+_.getElementPath = function (el) {
+  if (!el || el === document.body) {
+    return '';
+  }
+  const id = el.id ? `#${el.id}` : '';
+  const className = el.className ? `.${el.className}` : '';
+  const target = `/${el.tagName.toLowerCase()}${id}${className}`;
+  return _.getElementPath(el.parentNode) + target;
+};
+
+/**
+ * 判断 next href 是否改变
+ */
+_.isHrefChange = function (href, nextHref) {
+  // 如果 nextHref 为空、不是字符串，或者与上一个 url 相同，则返回false
+  if (!nextHref || typeof nextHref !== 'string' || nextHref === href) {
+    return false;
+  }
+
+  // 去掉 # 和 ? 后面的参数
+  href = href.replace(/\?.*$/, '').replace(/#.*$/, '');
+
+  const _nextHref = nextHref.replace(/\?.*$/, '').replace(/#.*$/, '');
+
+  return href !== _nextHref;
+};
+
+/**
+ * 自定义事件
+ * @param e
+ * @param detail
+ */
+_.customEvent = function (e, detail) {
+  let evt = null;
+
+  if (win.CustomEvent) {
+    evt = new CustomEvent(e, {
+      detail,
+    });
+  } else {
+    evt = doc.createEvent('HTMLEvents');
+    evt.initEvent(e, false, true);
+    evt.detail = detail;
+  }
+
+  win.dispatchEvent(evt);
+};
+
+/**
+ * 重写 history 方法 pushState replaceState，加入监听函数
+ * @param prop
+ */
+_.customHistory = function (prop) {
+  const fun = win.history[prop];
+  if (typeof fun === 'function') {
+    win.history[prop] = (...args) => {
+      let _href = args[2];
+      if (!_href) {
+        return false;
+      }
+      const {
+        href,
+      } = loc;
+      if (!(/^((http|https):)?\/\//.test(_href))) {
+        _href = this.getLocationOrigin() + (_href.indexOf('/') !== 0 ? `/${_href}` : _href);
+      }
+      const changed = this.hrefIsChange(href, _href);
+      const val = fun.apply(win.history, args);
+      if (changed) {
+        this.customEvent('beeHistorychange', {
+          oldURL: href,
+          newURL: _href,
+        });
+      }
+      return val;
+    };
+    win.history[prop].toString = `Bee custom: ${prop}() { [native code] }`;
+  }
+};
+
+/**
+ * 严重uid是否合法
+ */
 _.validUid = function (id) {
   if (_.isVoid(id)) return false;
   const arr = id.split('-');
-  if (arr.length !== 2 || arr[1].length !== config.uidRandomNum) return false;
+  if (arr.length !== 2 || arr[1].length !== config.uidNum) return false;
   return true;
 };
 
@@ -136,7 +319,7 @@ _.getPlatform = function () {
   if (_.isVoid(platform)) {
     os = 'other';
   } else if (platform[0] === 'linux') {
-    const android = /(android)/.exec(windowNavigator.userAgent.toLowerCase());
+    const android = /(android)/.exec(userAgent.toLowerCase());
     os = _.isNull(android) ? platform[0] : 'android';
   } else {
     [os] = platform;
@@ -152,7 +335,7 @@ _.analysisUA = function () {
     name: 'other',
     version: '0',
   };
-  const ua = navigator.userAgent.toLowerCase();
+  const ua = userAgent.toLowerCase();
   const browserRegExp = {
     // 微信小程序
     miniprogram: /miniprogram/,
@@ -174,6 +357,10 @@ _.analysisUA = function () {
     }
   });
   return b;
+};
+
+_.isM = function () {
+  return /(iPhone|iPad|iPod|iOS|ios|Android|Mobile)/i.test(userAgent);
 };
 
 

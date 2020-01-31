@@ -19,5 +19,6 @@ module.exports = {
     'eol-last': 0,
     'no-restricted-syntax': 0,
     'prefer-destructuring': 0,
+    'no-param-reassign': 0,
   }
 };
