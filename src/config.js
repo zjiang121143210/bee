@@ -17,7 +17,7 @@ export default {
    * 采集数据上报地址
    * 请开启CORS跨域
    */
-  req: 'jdqd.jd.com/poststring',
+  req: 'clew.fun/log',
   /**
    * 会话过期时间，默认 30 分钟
    * 若连续 30 分钟，未进行有效操作（上报），

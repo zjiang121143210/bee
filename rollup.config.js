@@ -2,41 +2,47 @@
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import babel from 'rollup-plugin-babel';
-// import json from 'rollup-plugin-json';
 import {
-  uglify
+  uglify,
 } from 'rollup-plugin-uglify';
+import pck from './package.json';
+
 export default {
   input: 'src/index.js',
-  // input: 'src/dp_url.js',
   output: {
-    // file: 'dist/bee.js',
-    file: './examples/bee.js',
-    // file: 'D:/nginx-1.8.1/html/qd.js',
-    // file: 'D:/work/code/data-screen/static/bundle.js',
+    file: 'dist/bee.js',
+    // file: './examples/bee.js',
+    banner: [
+      '/*!',
+      ' * Bee 数据采集SDK',
+      ` * Version ${pck.version}`,
+      ' * https://github.com/zjiang121143210/bee',
+      ' * wx: zjiang1_12 欢迎联系',
+      '*/',
+    ].join('\n'),
     name: 'bundle',
     format: 'iife',
-    sourcemap: false
+    sourcemap: false,
   },
   plugins: [
     // commonjs(),
     // resolve(),
     // commonjs(),
     babel({
-      exclude: 'node_modules/**'
+      exclude: 'node_modules/**',
     }),
     // json(),
-    // uglify({
-    //   mangle: true,
-    //   compress: {
-    //     pure_getters: true,
-    //     unsafe: true,
-    //     unsafe_comps: true
-    //   },
-    //   output: {
-    //     comments: /^!/
-    //   },
-    //   warnings: false
-    // })
-  ]
+    uglify({
+      mangle: true,
+      compress: {
+        pure_getters: true,
+        unsafe: true,
+        unsafe_comps: true,
+      },
+      output: {
+        comments: /^!/,
+      },
+      warnings: false,
+    }),
+  ],
 };
