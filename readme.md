@@ -4,7 +4,11 @@
 
 **任何采集系统的上报方式、数据结构等，都要结合后续的数据模型、计算能力等来进行设计。**
 
-[DEOM](http://test.clew.fun) （打开F12食用）
+[DEMO](http://test.clew.fun) （打开F12食用）
+
+[bee.js](http://clew.fun/bee.js)
+
+**施工中，代码和文档都不是很完善，见谅。**
 
 ## 基本概念
 
@@ -12,7 +16,12 @@
 - server   服务端相关代码(OpenResty)
 - examples 例子
 
-大概说明一下： 
+建议参考以下文档了解基础概念：
+
+[Google Analytics](https://developers.google.com/analytics/devguides/collection/analyticsjs)
+[GIO JS Book](https://sishen.gitbooks.io/gio-js-book/dom.html)
+
+大概说明一下：
 
 ### 上报事件类型
 
