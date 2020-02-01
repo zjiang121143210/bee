@@ -500,7 +500,7 @@
         var val = fun.apply(win.history, args);
 
         if (changed) {
-          _this.customEvent('beeHistorychange', {
+          _this.customEvent('beeHistoryChange', {
             oldURL: href,
             newURL: _href
           });
@@ -551,8 +551,6 @@
       os = platform[0];
     }
 
-    console.log(platform);
-    console.log(os);
     return os;
   };
   /**
@@ -1296,9 +1294,9 @@
     _.customHistory('replaceState'); // 注册单页面监听方法
 
 
-    _.addListener('qdhistorychange', bee.onrouteChange.bind(bee), false);
+    _.addListener('beeHistoryChange', bee.onRouteChange.bind(bee), false);
 
-    _.addListener('hashchange', bee.onrouteChange.bind(bee), false);
+    _.addListener('hashchange', bee.onRouteChange.bind(bee), false);
   }
 
   var Bee = function Bee(pid, userConfig) {
@@ -1386,10 +1384,10 @@
 
   Bee.prototype.onClick = function (e) {
     var el = e.target;
-    if (config.clickList.indexOf(el.tagName.toLocaleLowerCase()) === -1) return false;
 
     var targetData = _.getAttribute(el, config.clickTag, true);
 
+    if (!targetData && config.clickList.indexOf(el.tagName.toLocaleLowerCase()) === -1) return false;
     if (_.isVoid(targetData) && !config.allClick) return false;
 
     var elInfo = _.getElementInfo(el);

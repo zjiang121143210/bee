@@ -281,7 +281,7 @@ _.customHistory = function (prop) {
       const changed = this.hrefIsChange(href, _href);
       const val = fun.apply(win.history, args);
       if (changed) {
-        this.customEvent('beeHistorychange', {
+        this.customEvent('beeHistoryChange', {
           oldURL: href,
           newURL: _href,
         });
@@ -324,8 +324,6 @@ _.getPlatform = function () {
   } else {
     os = platform[0];
   }
-  console.log(platform);
-  console.log(os);
   return os;
 };
 

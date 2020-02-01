@@ -65,8 +65,8 @@ function initSpaRouter(bee) {
   _.customHistory('replaceState');
 
   // 注册单页面监听方法
-  _.addListener('qdhistorychange', bee.onrouteChange.bind(bee), false);
-  _.addListener('hashchange', bee.onrouteChange.bind(bee), false);
+  _.addListener('beeHistoryChange', bee.onRouteChange.bind(bee), false);
+  _.addListener('hashchange', bee.onRouteChange.bind(bee), false);
 }
 
 const Bee = function (pid, userConfig) {
@@ -150,8 +150,8 @@ Bee.prototype.setConfig = function (userConfig) {
  */
 Bee.prototype.onClick = function (e) {
   const el = e.target;
-  if (config.clickList.indexOf(el.tagName.toLocaleLowerCase()) === -1) return false;
   const targetData = _.getAttribute(el, config.clickTag, true);
+  if (!targetData && config.clickList.indexOf(el.tagName.toLocaleLowerCase()) === -1) return false;
   if (_.isVoid(targetData) && !config.allClick) return false;
   const elInfo = _.getElementInfo(el);
   return this.sendClick(elInfo, targetData);
