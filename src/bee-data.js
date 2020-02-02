@@ -85,7 +85,7 @@ BeeData.prototype._makeCommonData = function (type) {
      */
     u: _.getCookie('uid'),
     s: _.getCookie('sid'),
-    c: this.getCid(),
+    c: this.getCid() || '',
     p: config.pid,
 
     /**
