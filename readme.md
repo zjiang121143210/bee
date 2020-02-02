@@ -8,6 +8,8 @@
 
 [bee.js](http://clew.fun/bee.js)
 
+结合chrome 扩展使用更加： [Bee-devtools](https://github.com/zjiang121143210/bee-devtools)
+
 **施工中，代码和文档都不是很完善，见谅。**
 
 ## 基本概念
@@ -64,7 +66,7 @@ SDK(采集数据) -> OpenResty(nginx+lua,接收数据并落日志) -> 清洗 -> 
 
 相关库：
 
-- bee-devTool： chorme扩展，配合验证上报数据 (施工中)
+- [Bee-devtools](https://github.com/zjiang121143210/bee-devtools)： chorme扩展，配合验证上报数据
 
 ## 配置
 
