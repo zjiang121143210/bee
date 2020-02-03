@@ -2,15 +2,16 @@
 
 ## 写在前面
 
-**任何采集系统的上报方式、数据结构等，都要结合后续的数据模型、计算能力等来进行设计。**
+**施工中，代码和文档都不是很完善，欢迎交流指导。**
 
-[DEMO](http://test.clew.fun) （打开F12食用）
+按照正常的结构来讲，数据采集系统应该是数据分析系统的一部分。
+所以采集系统的设计在考虑自身功能的同时，也应该根据后续的计算、分析、可视化等模块进行相应的调整。
+
+[DEMO](http://test.clew.fun) （打开F12参考上报数据）
 
 [bee.js](http://clew.fun/bee.js)
 
-结合chrome 扩展使用更加： [Bee-devtools](https://github.com/zjiang121143210/bee-devtools)
-
-**施工中，代码和文档都不是很完善，见谅。**
+结合chrome 扩展食用更佳： [Bee-devtools](https://github.com/zjiang121143210/bee-devtools)
 
 ## 基本概念
 
@@ -31,6 +32,8 @@
 - 点击事件： `click`，当用户点击被标记元素(坑位)时触发，上报本次点击的相关信息。
 - 曝光事件： `imp`，用来上报被标记元素(坑位)以被展示（曝光），具体触发方式相对复杂。
 - 自定义事件： `event`，用户主动触发，用来上报用户自定义的事件。
+
+报文字段解析和报文实例可以查看： `docs/报文解析及实例.md`。
 
 ### 会话、访次相关
 
@@ -85,6 +88,10 @@ bee('config', {cid: 'id', req: 'clew.fun/log'});
 完整的配置列表可以参考 `src/config.js`。
 
 ## 命令API
+
+本系统，参考 [Google Analytics](https://developers.google.com/analytics/devguides/collection/analyticsjs/how-analyticsjs-works#the_ga_command_queue) 的使用方式，实现了命令队列。
+
+> 之所以称其为命令队列，是因为该函数不会立即执行其中的命令，而是将这些命令加入到队列中，将这些命令的执行延迟到 bee.js 库加载完成后进行。
 
 通过`bee(command, param, option)`的方式可以执行一些命令，来修改配置或上报数据
 
