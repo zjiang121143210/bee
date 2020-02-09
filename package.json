@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "rollup --config ./rollup.config.js -w"
+    "dev": "rollup --config ./rollup.config.js -w",
+    "build": "rollup --config ./rollup.config.js"
   },
   "author": "jiangzhen",
   "license": "ISC",
