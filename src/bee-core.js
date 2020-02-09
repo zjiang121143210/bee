@@ -213,6 +213,8 @@ Bee.prototype.onRouteChange = function (e) {
     oldURL = e.detail && e.detail.oldURL;
   }
   this.beeData.updateRoute(newURL, oldURL);
+  // 在单页应用的情况下清空曝光列表
+  if (this.beeImp) this.beeImp.clearImpList();
   this.sendPage();
 };
 

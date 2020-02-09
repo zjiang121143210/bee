@@ -172,4 +172,14 @@ export default class BeeImp {
   getScrollHeight() {
     this.docScrollHeight = Math.max(bodyElm.scrollHeight, docElm.scrollHeight);
   }
+
+  /**
+   * 主动清空曝光标签列表
+   * 主要是为了防止某些情况下，
+   * impNodeList引用的标签长期不释放
+   * 导致的内存泄漏。
+   */
+  clearImpList() {
+    this.impNodeList = [];
+  }
 }
