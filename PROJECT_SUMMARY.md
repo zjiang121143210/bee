@@ -10,6 +10,35 @@
 - **项目状态**: 施工中（代码和文档不完善）
 - **Github**: https://github.com/zjiang121143210/bee
 
+### 系统整体架构图
+
+```mermaid
+graph TB
+    A[Web页面] --> B[Bee SDK]
+    B --> C{事件类型}
+    C -->|page| D[页面浏览事件]
+    C -->|click| E[点击事件]
+    C -->|imp| F[曝光事件]
+    C -->|event| G[自定义事件]
+    
+    D --> H[数据格式化]
+    E --> H
+    F --> H
+    G --> H
+    
+    H --> I[数据发送]
+    I --> J[OpenResty]
+    J --> K[Lua脚本处理]
+    K --> L[日志文件]
+    L --> M[数据分析系统]
+    M --> N[可视化展示]
+    
+    style A fill:#e1f5fe
+    style B fill:#f3e5f5
+    style J fill:#fff3e0
+    style M fill:#e8f5e8
+```
+
 ## 技术栈
 
 ### 前端SDK
@@ -22,6 +51,32 @@
 ### 服务端
 - **服务器**: OpenResty (Nginx + Lua)
 - **日志处理**: 按天分割的日志文件系统
+
+### 技术栈组成图
+
+```mermaid
+mindmap
+  root((Bee SDK))
+    前端开发
+      JavaScript ES6+
+      Rollup构建
+      Babel转换
+      ESLint规范
+    数据处理
+      事件采集
+      数据格式化
+      用户识别
+      会话管理
+    服务端
+      OpenResty
+      Nginx
+      Lua脚本
+      日志系统
+    工具链
+      Chrome扩展
+      在线Demo
+      文档系统
+```
 
 ### 依赖管理
 ```json
@@ -81,14 +136,58 @@
 
 #### 2. 事件采集系统
 支持四种核心事件类型：
+
+```mermaid
+graph LR
+    A[用户行为] --> B{事件分类}
+    B -->|页面访问| C[page事件]
+    B -->|元素点击| D[click事件]
+    B -->|内容展示| E[imp事件]
+    B -->|业务逻辑| F[event事件]
+    
+    C --> G[PV统计]
+    D --> H[交互分析]
+    E --> I[曝光分析]
+    F --> J[业务分析]
+    
+    G --> K[数据上报]
+    H --> K
+    I --> K
+    J --> K
+    
+    style C fill:#e3f2fd
+    style D fill:#f3e5f5
+    style E fill:#e8f5e8
+    style F fill:#fff3e0
+```
+
 - **页面事件(page)**: PV统计，页面浏览相关信息
 - **点击事件(click)**: 用户点击行为追踪
 - **曝光事件(imp)**: 元素展示曝光统计
 - **自定义事件(event)**: 用户自定义业务事件
 
 #### 3. 数据处理流程
-```
-前端埋点 → SDK采集 → 数据格式化 → 发送到服务端 → OpenResty接收 → 日志落盘 → 后续分析
+
+```mermaid
+sequenceDiagram
+    participant U as 用户
+    participant W as Web页面
+    participant B as Bee SDK
+    participant S as 服务端
+    participant L as 日志系统
+    participant A as 分析系统
+    
+    U->>W: 访问页面
+    W->>B: 初始化SDK
+    B->>B: 生成用户ID/会话ID
+    
+    U->>W: 触发交互
+    W->>B: 捕获事件
+    B->>B: 格式化数据
+    B->>S: 发送数据
+    S->>L: 写入日志
+    L->>A: 数据流转
+    A->>A: 分析处理
 ```
 
 ## 核心功能特性
@@ -119,6 +218,47 @@
 - **JSON格式**: 结构化数据便于后续处理
 
 ## 数据结构设计
+
+### 数据结构层次图
+
+```mermaid
+graph TD
+    A[上报数据] --> B[公共字段]
+    A --> C[特有字段]
+    
+    B --> D[用户标识]
+    B --> E[会话信息]
+    B --> F[设备信息]
+    B --> G[页面信息]
+    B --> H[时间信息]
+    
+    D --> D1[用户ID<br/>u: JNOA2TWL-xxx]
+    D --> D2[业务ID<br/>c: user123]
+    
+    E --> E1[会话ID<br/>s: xxx-1]
+    E --> E2[项目ID<br/>p: projectId]
+    
+    F --> F1[浏览器<br/>bt: chrome]
+    F --> F2[操作系统<br/>os: win]
+    F --> F3[屏幕分辨率<br/>sr: 1920x1080]
+    
+    G --> G1[当前URL<br/>url: domain/page]
+    G --> G2[来源URL<br/>rf: referrer]
+    
+    H --> H1[客户端时间<br/>tm: timestamp]
+    H --> H2[页面时间<br/>pt: pageTime]
+    
+    C --> I{事件类型}
+    I -->|page| J[页面字段<br/>tl: 页面标题]
+    I -->|click| K[点击字段<br/>br: 坑位信息<br/>ex: xpath路径<br/>ev: 元素内容]
+    I -->|imp| L[曝光字段<br/>imp: 曝光数组]
+    I -->|event| M[自定义字段<br/>et: 事件类型<br/>ep: 事件参数]
+    
+    style A fill:#f9f9f9
+    style B fill:#e3f2fd
+    style C fill:#fff3e0
+    style I fill:#f3e5f5
+```
 
 ### 公共字段结构
 ```javascript
@@ -199,15 +339,107 @@ bee('config', 'debug', true);
 
 ## 部署架构
 
+### 服务端架构图
+
+```mermaid
+graph TB
+    subgraph "客户端层"
+        A[Web浏览器]
+        B[移动端WebView]
+        C[小程序]
+    end
+    
+    subgraph "SDK层"
+        D[Bee SDK]
+        E[命令队列]
+        F[事件处理器]
+    end
+    
+    subgraph "网络层"
+        G[HTTP/HTTPS]
+        H[CORS处理]
+    end
+    
+    subgraph "服务端层"
+        I[负载均衡]
+        J[OpenResty]
+        K[Nginx]
+        L[Lua脚本]
+    end
+    
+    subgraph "存储层"
+        M[日志文件系统]
+        N[按天分割]
+        O[备份策略]
+    end
+    
+    subgraph "分析层"
+        P[数据清洗]
+        Q[实时计算]
+        R[离线分析]
+        S[可视化系统]
+    end
+    
+    A --> D
+    B --> D
+    C --> D
+    
+    D --> E
+    E --> F
+    F --> G
+    G --> H
+    H --> I
+    I --> J
+    J --> K
+    K --> L
+    L --> M
+    M --> N
+    N --> O
+    M --> P
+    P --> Q
+    P --> R
+    Q --> S
+    R --> S
+    
+    style D fill:#f3e5f5
+    style J fill:#fff3e0
+    style M fill:#e8f5e8
+    style S fill:#e3f2fd
+```
+
 ### 服务端组件
 1. **Nginx**: 接收HTTP请求
 2. **Lua脚本**: 处理数据并写入日志
 3. **日志系统**: 按天分割的文件存储
 4. **后续处理**: 数据清洗→计算分析→可视化展示
 
-### 数据流转
-```
-客户端 → CORS请求 → OpenResty → 日志文件 → 数据管道 → 分析系统
+### 数据流转时序图
+
+```mermaid
+sequenceDiagram
+    participant C as 客户端
+    participant LB as 负载均衡
+    participant OR as OpenResty
+    participant FS as 文件系统
+    participant DP as 数据管道
+    participant AS as 分析系统
+    
+    Note over C,AS: 数据采集与处理流程
+    
+    C->>LB: HTTP请求 (数据上报)
+    LB->>OR: 路由到服务实例
+    OR->>OR: Lua脚本处理
+    Note right of OR: 1. 解析请求数据<br/>2. 获取IP和UA<br/>3. 添加服务端时间戳
+    OR->>FS: 写入日志文件
+    Note right of FS: 按天分割存储<br/>格式: bee20231227.log
+    OR-->>C: 返回确认响应
+    
+    loop 定时任务
+        DP->>FS: 读取新日志
+        DP->>DP: 数据清洗和验证
+        DP->>AS: 推送到分析系统
+        AS->>AS: 实时/离线分析
+    end
 ```
 
 ## 相关工具
@@ -233,6 +465,46 @@ npm run build
 - **兼容性**: Babel转换支持旧版浏览器
 
 ## 项目特色
+
+### 特性雷达图
+
+```mermaid
+graph LR
+    subgraph "Bee SDK 核心特性"
+        A[轻量级设计]
+        B[易用性]
+        C[扩展性]
+        D[可靠性]
+        E[性能优化]
+        F[兼容性]
+    end
+    
+    A --> A1[压缩体积小<br/>异步加载<br/>最小性能影响]
+    B --> B1[GA风格API<br/>自动化采集<br/>灵活配置]
+    C --> C1[模块化架构<br/>标准数据格式<br/>自定义事件]
+    D --> D1[错误处理<br/>数据去重<br/>防丢失机制]
+    E --> E1[批量上报<br/>智能曝光<br/>缓存机制]
+    F --> F1[跨域支持<br/>多浏览器<br/>移动端适配]
+    
+    style A fill:#e3f2fd
+    style B fill:#f3e5f5
+    style C fill:#e8f5e8
+    style D fill:#fff3e0
+    style E fill:#fce4ec
+    style F fill:#f1f8e9
+```
+
+### 功能对比表
+
+| 特性维度 | Bee SDK | Google Analytics | 其他埋点方案 |
+|---------|---------|------------------|-------------|
+| **部署方式** | 自托管 | 云服务 | 混合 |
+| **数据控制** | ✅ 完全可控 | ❌ 第三方托管 | ⚠️ 部分可控 |
+| **定制化** | ✅ 高度定制 | ❌ 受限 | ⚠️ 中等 |
+| **实时性** | ✅ 实时处理 | ⚠️ 延迟较高 | ⚠️ 取决于实现 |
+| **成本** | ✅ 自主可控 | ⚠️ 按量付费 | ⚠️ 许可费用 |
+| **学习成本** | ⚠️ 需要开发 | ✅ 即开即用 | ⚠️ 中等 |
+| **扩展性** | ✅ 完全开放 | ❌ 受限 | ⚠️ 部分开放 |
 
 ### 1. 轻量级设计
 - 压缩后文件体积小
